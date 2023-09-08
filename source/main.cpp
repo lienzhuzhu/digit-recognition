@@ -13,6 +13,19 @@ int main() {
 
     Coords cell;
 
+
+    sf::Font font;
+    if (!font.loadFromFile("../res/SpaceMonoNerdFont-Bold.ttf")) {
+        return 1;
+    }
+    sf::Text text;
+    text.setFont(font);
+    text.setString("Press 'r' key to clear");
+    text.setCharacterSize(20);
+    text.setFillColor(WHITE);
+    text.setPosition(GRID_COLS * CELL_SIZE + (PADDING / 2) - (text.getGlobalBounds().width / 2), 3 * CELL_SIZE);
+
+
     while (window.isOpen()) {
 
         sf::Event event;
@@ -43,8 +56,17 @@ int main() {
             init_map(map);
         }
 
+        sf::Text guess_prompt;
+        guess_prompt.setFont(font);
+        guess_prompt.setString("You drew the number");
+        guess_prompt.setCharacterSize(20);
+        guess_prompt.setFillColor(WHITE);
+        guess_prompt.setPosition(GRID_COLS * CELL_SIZE + (PADDING / 2) - (guess_prompt.getGlobalBounds().width / 2), 10 * CELL_SIZE);
+
         window.clear();
         draw_map(map, window);
+        window.draw(text);
+        window.draw(guess_prompt);
         window.display();
     }
 
