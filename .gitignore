@@ -1,5 +1,6 @@
 .DS_Store
-search
+nn
+raw/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
