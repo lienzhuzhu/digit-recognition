@@ -33,15 +33,11 @@ int main() {
     //auto test_labels = read_mnist_labels("../raw/t10k-labels-idx1-ubyte");
     //auto train_images = read_mnist_images("../raw/t10k-images-idx3-ubyte");
 
-
-    cv::Mat img(28, 28, CV_8U, train_images[5].data());
-    cv::imshow("First Training Image", img);
-
+    cv::Mat img(28, 28, CV_8U, train_images[0].data());
+    cv::imshow("Training Image", img);
     for (int i = 0; i < 10; ++i) {
         std::cout << static_cast<int>(train_labels[i]) << std::endl;
     }
-
-
 
 
     while (window.isOpen()) {
