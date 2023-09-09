@@ -1,8 +1,8 @@
 #include <chrono>
-#include <iostream>
 
 #include "include/DrawMap.hpp"
 #include "include/HandleMouse.hpp"
+#include "include/LoadData.hpp"
 
 
 int main() {
@@ -24,6 +24,12 @@ int main() {
     text.setCharacterSize(20);
     text.setFillColor(WHITE);
     text.setPosition(GRID_COLS * CELL_SIZE + (PADDING / 2) - (text.getGlobalBounds().width / 2), 3 * CELL_SIZE);
+
+
+    auto labels = read_mnist_labels("../raw/train-labels-idx1-ubyte");
+    auto images = read_mnist_images("../raw/train-images-idx3-ubyte");
+
+    std::cout << labels.size() << " " << images.size() << " " << images[0].size() << std::endl;
 
 
     while (window.isOpen()) {

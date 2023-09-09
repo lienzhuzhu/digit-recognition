@@ -4,6 +4,8 @@
 #include <unordered_set>
 #include <queue>
 #include <iostream>
+#include <fstream>
+#include <vector>
 
 #define GRID_ROWS   28
 #define GRID_COLS   28
