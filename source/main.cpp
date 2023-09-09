@@ -3,6 +3,7 @@
 #include "include/DrawMap.hpp"
 #include "include/HandleMouse.hpp"
 #include "include/LoadData.hpp"
+#include <opencv2/opencv.hpp>
 
 
 int main() {
@@ -26,10 +27,21 @@ int main() {
     text.setPosition(GRID_COLS * CELL_SIZE + (PADDING / 2) - (text.getGlobalBounds().width / 2), 3 * CELL_SIZE);
 
 
-    auto labels = read_mnist_labels("../raw/train-labels-idx1-ubyte");
-    auto images = read_mnist_images("../raw/train-images-idx3-ubyte");
+    auto train_labels = read_mnist_labels("../raw/train-labels-idx1-ubyte");
+    auto train_images = read_mnist_images("../raw/train-images-idx3-ubyte");
 
-    std::cout << labels.size() << " " << images.size() << " " << images[0].size() << std::endl;
+    //auto test_labels = read_mnist_labels("../raw/t10k-labels-idx1-ubyte");
+    //auto train_images = read_mnist_images("../raw/t10k-images-idx3-ubyte");
+
+
+    cv::Mat img(28, 28, CV_8U, train_images[5].data());
+    cv::imshow("First Training Image", img);
+
+    for (int i = 0; i < 10; ++i) {
+        std::cout << static_cast<int>(train_labels[i]) << std::endl;
+    }
+
+
 
 
     while (window.isOpen()) {
