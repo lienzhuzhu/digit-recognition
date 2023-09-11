@@ -20,5 +20,10 @@
 #define RED sf::Color(255,102,99)
 #define BLUE sf::Color(0,109,170)
 
+const std::string TRAIN_IMAGES_PATH     = "../raw/train-images-idx3-ubyte";
+const std::string TRAIN_LABELS_PATH     = "../raw/train-labels-idx1-ubyte";
+const std::string TEST_IMAGES_PATH      = "../raw/t10k-images-idx3-ubyte";
+const std::string TEST_LABELS_PATH      = "../raw/t10k-labels-idx1-ubyte";
+
 using Grid = std::array<std::array<sf::RectangleShape, GRID_COLS>, GRID_ROWS>;
 using Coords = std::pair<unsigned short, unsigned short>;

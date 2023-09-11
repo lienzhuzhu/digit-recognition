@@ -27,8 +27,9 @@ int main() {
     text.setPosition(GRID_COLS * CELL_SIZE + (PADDING / 2) - (text.getGlobalBounds().width / 2), 3 * CELL_SIZE);
 
 
-    Eigen::MatrixXd train_labels = read_mnist_labels("../raw/train-labels-idx1-ubyte");
-    Eigen::MatrixXd train_images = read_mnist_images("../raw/train-images-idx3-ubyte");
+    Eigen::MatrixXd train_labels = read_mnist_labels(TRAIN_LABELS_PATH);
+    Eigen::MatrixXd train_images = read_mnist_images(TRAIN_IMAGES_PATH);
+
 
     for (int i = 0; i < 10; ++i) {
         Eigen::MatrixXd label_vector = train_labels.row(i);
