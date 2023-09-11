@@ -27,17 +27,24 @@ int main() {
     text.setPosition(GRID_COLS * CELL_SIZE + (PADDING / 2) - (text.getGlobalBounds().width / 2), 3 * CELL_SIZE);
 
 
-    auto train_labels = read_mnist_labels("../raw/train-labels-idx1-ubyte");
-    auto train_images = read_mnist_images("../raw/train-images-idx3-ubyte");
+    Eigen::MatrixXd train_labels = read_mnist_labels("../raw/train-labels-idx1-ubyte");
+    Eigen::MatrixXd train_images = read_mnist_images("../raw/train-images-idx3-ubyte");
 
-    //auto test_labels = read_mnist_labels("../raw/t10k-labels-idx1-ubyte");
-    //auto train_images = read_mnist_images("../raw/t10k-images-idx3-ubyte");
-
-    cv::Mat img(28, 28, CV_8U, train_images[0].data());
-    cv::imshow("Training Image", img);
     for (int i = 0; i < 10; ++i) {
-        std::cout << static_cast<int>(train_labels[i]) << std::endl;
+        Eigen::MatrixXd label_vector = train_labels.row(i);
+        for (int j = 0; j < label_vector.size(); ++j) {
+            std::cout << label_vector(j) << " ";
+        }
+        std::cout << std::endl;
     }
+
+
+    Eigen::VectorXd single_image_vector = train_images.row(0);
+    cv::Mat img(28, 28, CV_64F);
+    Eigen::Map<Eigen::MatrixXd>(img.ptr<double>(), img.rows, img.cols) = Eigen::Map<const Eigen::MatrixXd>(single_image_vector.data(), 28, 28);
+    cv::Mat img_8u;
+    img.convertTo(img_8u, CV_8U, 255.0);
+    cv::imshow("Training Image", img_8u);
 
 
     while (window.isOpen()) {

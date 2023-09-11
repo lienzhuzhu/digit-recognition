@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <Eigen/Dense>
 #include <unordered_set>
 #include <queue>
 #include <iostream>

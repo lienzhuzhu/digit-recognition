@@ -1,8 +1,11 @@
-#include <Eigen/Dense>
-#include <iostream>
-#include <vector>
-#include <cmath>
-#include <random>
+#include "include/NeuralNetwork.hpp"
+#include "include/LoadData.hpp"
+
+
+#define NUM_INPUT_NEURONS   784
+#define NUM_HIDDEN_NEURONS  20
+#define NUM_OUTPUT_NEURONS  10
+
 
 // Sigmoid function
 Eigen::MatrixXd sigmoid(const Eigen::MatrixXd& z) {
@@ -12,12 +15,14 @@ Eigen::MatrixXd sigmoid(const Eigen::MatrixXd& z) {
 void train_nn() {
     // Your get_mnist function here. Assuming images and labels are Eigen::MatrixXd
     Eigen::MatrixXd images, labels;
-    // get_mnist(images, labels);
+    //get_mnist(images, labels);
 
-    Eigen::MatrixXd w_i_h = Eigen::MatrixXd::Random(20, 784);
-    Eigen::MatrixXd w_h_o = Eigen::MatrixXd::Random(10, 20);
-    Eigen::MatrixXd b_i_h = Eigen::MatrixXd::Zero(20, 1);
-    Eigen::MatrixXd b_h_o = Eigen::MatrixXd::Zero(10, 1);
+    // Randomly initialize weights and biases
+    Eigen::MatrixXd w_i_h = Eigen::MatrixXd::Random(NUM_HIDDEN_NEURONS, NUM_INPUT_NEURONS);
+    Eigen::MatrixXd b_i_h = Eigen::MatrixXd::Zero(NUM_HIDDEN_NEURONS, 1);
+
+    Eigen::MatrixXd w_h_o = Eigen::MatrixXd::Random(NUM_OUTPUT_NEURONS, NUM_HIDDEN_NEURONS);
+    Eigen::MatrixXd b_h_o = Eigen::MatrixXd::Zero(NUM_OUTPUT_NEURONS, 1);
 
     double learn_rate = 0.01;
     int nr_correct = 0;
@@ -27,7 +32,7 @@ void train_nn() {
         // Assuming one image and label at a time
         for (int i = 0; i < images.rows(); ++i) {
             Eigen::MatrixXd img = images.row(i).transpose();
-            Eigen::MatrixXd l = labels.row(i).transpose();
+            Eigen::MatrixXd label = labels.row(i).transpose();
 
             // Forward propagation input -> hidden
             Eigen::MatrixXd h_pre = b_i_h + w_i_h * img;
@@ -37,13 +42,10 @@ void train_nn() {
             Eigen::MatrixXd o_pre = b_h_o + w_h_o * h;
             Eigen::MatrixXd o = sigmoid(o_pre);
 
-            // Error calculation (mean squared error)
-            Eigen::MatrixXd e = (o - l).array().pow(2).sum() / o.size();
-
-            nr_correct += (o.maxCoeff() == l.maxCoeff());
+            nr_correct += (o.maxCoeff() == label.maxCoeff());
 
             // Backpropagation output -> hidden
-            Eigen::MatrixXd delta_o = o - l;
+            Eigen::MatrixXd delta_o = o - label;
             w_h_o += -learn_rate * delta_o * h.transpose();
             b_h_o += -learn_rate * delta_o;
 
@@ -58,11 +60,9 @@ void train_nn() {
         nr_correct = 0;
     }
 
-    // Testing and displaying the results would go here
     
-    // Initialize variables for testing
+    /*
     Eigen::MatrixXd test_images, test_labels;
-    // Assuming get_mnist_test is a function to load test images and labels
     // get_mnist(test_images, test_labels);
 
     int test_nr_correct = 0;
@@ -86,6 +86,7 @@ void train_nn() {
 
     // Calculate and display the test accuracy
     std::cout << "Test Accuracy: " << (double)test_nr_correct / test_images.rows() * 100 << "%" << std::endl;
+    */
 
 }
 
