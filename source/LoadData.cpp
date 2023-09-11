@@ -67,3 +67,31 @@ ReturnStatus read_mnist_images(const std::string &full_path, Eigen::MatrixXd &im
         return FAILURE;
     }
 }
+
+
+ReturnStatus load_parameters(const std::string& filename, Eigen::MatrixXd& matrix) {
+    std::ifstream infile(filename);
+    if (!infile.is_open()) {
+        std::cerr << "Failed to open " << filename << std::endl;
+        return FAILURE;
+    }
+    
+    std::vector<double> values;
+    int rows = 0;
+    int cols = 0;
+
+    std::string line;
+    while (std::getline(infile, line)) {
+        std::stringstream ss(line);
+        cols = 0;
+        double val;
+        while (ss >> val) {
+            values.push_back(val);
+            ++cols;
+        }
+        ++rows;
+    }
+
+    matrix = Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>(values.data(), rows, cols);
+    return SUCCESS;
+}

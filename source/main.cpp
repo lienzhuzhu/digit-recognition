@@ -20,7 +20,7 @@ int main() {
 
     sf::Font font;
     if (!font.loadFromFile("../res/SpaceMonoNerdFont-Bold.ttf")) {
-        return 1;
+        return FAILURE;
     }
     sf::Text text;
     text.setFont(font);
@@ -36,6 +36,25 @@ int main() {
         return FAILURE;
     }
 #endif
+
+    Eigen::MatrixXd w_i_h, b_i_h, w_h_o, b_h_o;
+
+    if (load_parameters("model/w_i_h.txt", w_i_h)) {
+        std::cerr << "Could not load w_i_h" << std::endl;
+        return FAILURE;
+    }
+    if (load_parameters("model/b_i_h.txt", b_i_h)) {
+        std::cerr << "Could not load b_i_h" << std::endl;
+        return FAILURE;
+    }
+    if (load_parameters("model/w_h_o.txt", w_h_o)) {
+        std::cerr << "Could not load w_h_o" << std::endl;
+        return FAILURE;
+    }
+    if (load_parameters("model/b_h_o.txt", b_h_o)) {
+        std::cerr << "Could not load b_h_o" << std::endl;
+        return FAILURE;
+    }
 
 
     while (window.isOpen()) {

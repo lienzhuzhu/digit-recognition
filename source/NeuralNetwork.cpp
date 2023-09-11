@@ -1,5 +1,4 @@
 #include "include/NeuralNetwork.hpp"
-#include "include/LoadData.hpp"
 
 
 #define NUM_INPUT_NEURONS   784
@@ -12,11 +11,11 @@ Eigen::MatrixXd sigmoid(const Eigen::MatrixXd& z) {
 }
 
 
-void saveMatrix(const Eigen::MatrixXd& matrix, const std::string& filename) {
-    std::ofstream outFile(filename);
-    if (outFile.is_open()) {
-        outFile << matrix.format(Eigen::IOFormat(Eigen::FullPrecision));
-        outFile.close();
+void save_parameters(const Eigen::MatrixXd& matrix, const std::string& filename) {
+    std::ofstream out_file(filename);
+    if (out_file.is_open()) {
+        out_file << matrix.format(Eigen::IOFormat(Eigen::FullPrecision));
+        out_file.close();
     } else {
         std::cout << "Cannot open file for writing: " << filename << std::endl;
     }
@@ -90,11 +89,16 @@ ReturnStatus train_nn() {
         nr_correct = 0;
     }
 
+    std::cout << "w_i_h rows, cols" << w_i_h.rows() << ", " << w_i_h.cols() << std::endl;
+    std::cout << "b_i_h rows, cols" << b_i_h.rows() << ", " << b_i_h.cols() << std::endl;
+    std::cout << "w_h_o rows, cols" << w_h_o.rows() << ", " << w_h_o.cols() << std::endl;
+    std::cout << "b_h_o rows, cols" << b_h_o.rows() << ", " << b_h_o.cols() << std::endl;
+
     // Save learned parameters
-    saveMatrix(w_i_h, "model/w_i_h.txt");
-    saveMatrix(b_i_h, "model/b_i_h.txt");
-    saveMatrix(w_h_o, "model/w_h_o.txt");
-    saveMatrix(b_h_o, "model/b_h_o.txt");
+    save_parameters(w_i_h, "model/w_i_h.txt");
+    save_parameters(b_i_h, "model/b_i_h.txt");
+    save_parameters(w_h_o, "model/w_h_o.txt");
+    save_parameters(b_h_o, "model/b_h_o.txt");
 
     return SUCCESS;
 }
