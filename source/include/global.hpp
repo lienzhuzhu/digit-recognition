@@ -27,3 +27,8 @@ const std::string TEST_LABELS_PATH      = "../raw/t10k-labels-idx1-ubyte";
 
 using Grid = std::array<std::array<sf::RectangleShape, GRID_COLS>, GRID_ROWS>;
 using Coords = std::pair<unsigned short, unsigned short>;
+
+enum ReturnStatus {
+    SUCCESS = 0,
+    FAILURE
+};

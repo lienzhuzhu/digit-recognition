@@ -12,10 +12,17 @@ Eigen::MatrixXd sigmoid(const Eigen::MatrixXd& z) {
     return 1.0 / (1.0 + (-z).array().exp());
 }
 
-void train_nn() {
-    // Your get_mnist function here. Assuming images and labels are Eigen::MatrixXd
+ReturnStatus train_nn() {
     Eigen::MatrixXd images, labels;
-    //get_mnist(images, labels);
+    
+    if (read_mnist_labels(TRAIN_LABELS_PATH, labels)) {
+        std::cout << "reading labels failed" << std::endl;
+        return FAILURE;
+    }
+    if (read_mnist_images(TRAIN_IMAGES_PATH, images)) {
+        std::cout << "reading images failed" << std::endl;
+        return FAILURE;
+    }
 
     // Randomly initialize weights and biases
     Eigen::MatrixXd w_i_h = Eigen::MatrixXd::Random(NUM_HIDDEN_NEURONS, NUM_INPUT_NEURONS);
@@ -28,9 +35,13 @@ void train_nn() {
     int nr_correct = 0;
     int epochs = 3;
 
+    int predicted_index, true_index;
+    Eigen::VectorXd::Index maxRow, maxCol;
+
     for (int epoch = 0; epoch < epochs; ++epoch) {
-        // Assuming one image and label at a time
+        std::cout << "Training Epoch: " << epoch << std::endl;
         for (int i = 0; i < images.rows(); ++i) {
+            std::cout << "Processing sample: " << i << std::endl;
             Eigen::MatrixXd img = images.row(i).transpose();
             Eigen::MatrixXd label = labels.row(i).transpose();
 
@@ -42,7 +53,16 @@ void train_nn() {
             Eigen::MatrixXd o_pre = b_h_o + w_h_o * h;
             Eigen::MatrixXd o = sigmoid(o_pre);
 
-            nr_correct += (o.maxCoeff() == label.maxCoeff());
+            // Find the index of the maximum value in the output layer's activation
+            o.maxCoeff(&maxRow, &maxCol);
+            predicted_index = maxRow;
+
+            // Find the index of the maximum value in the label (should be 1)
+            label.maxCoeff(&maxRow, &maxCol);
+            true_index = maxRow;
+
+            // Count it as correct if the indices match
+            nr_correct += (predicted_index == true_index);
 
             // Backpropagation output -> hidden
             Eigen::MatrixXd delta_o = o - label;
@@ -60,7 +80,13 @@ void train_nn() {
         nr_correct = 0;
     }
 
-    
+    // TODO: save learned parameters
+
+    return SUCCESS;
+}
+
+
+void test_nn() {
     /*
     Eigen::MatrixXd test_images, test_labels;
     // get_mnist(test_images, test_labels);
@@ -87,6 +113,4 @@ void train_nn() {
     // Calculate and display the test accuracy
     std::cout << "Test Accuracy: " << (double)test_nr_correct / test_images.rows() * 100 << "%" << std::endl;
     */
-
 }
-

@@ -2,6 +2,5 @@
 
 
 Eigen::MatrixXd sigmoid(const Eigen::MatrixXd& z);
-void train_nn();
+ReturnStatus train_nn();
 void test_nn();
-void save_model();

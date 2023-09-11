@@ -1,9 +1,9 @@
 #include <chrono>
+#include <opencv2/opencv.hpp>
 
 #include "include/DrawMap.hpp"
 #include "include/HandleMouse.hpp"
-#include "include/LoadData.hpp"
-#include <opencv2/opencv.hpp>
+#include "include/NeuralNetwork.hpp"
 
 
 int main() {
@@ -27,8 +27,18 @@ int main() {
     text.setPosition(GRID_COLS * CELL_SIZE + (PADDING / 2) - (text.getGlobalBounds().width / 2), 3 * CELL_SIZE);
 
 
-    Eigen::MatrixXd train_labels = read_mnist_labels(TRAIN_LABELS_PATH);
-    Eigen::MatrixXd train_images = read_mnist_images(TRAIN_IMAGES_PATH);
+    /*
+    Eigen::MatrixXd train_labels; 
+    Eigen::MatrixXd train_images;
+
+    if (read_mnist_labels(TRAIN_LABELS_PATH, train_labels)) {
+        std::cout << "reading labels failed" << std::endl;
+        return FAILURE;
+    }
+    if (read_mnist_images(TRAIN_IMAGES_PATH, train_images)) {
+        std::cout << "reading images failed" << std::endl;
+        return FAILURE;
+    }
 
 
     for (int i = 0; i < 10; ++i) {
@@ -46,6 +56,13 @@ int main() {
     cv::Mat img_8u;
     img.convertTo(img_8u, CV_8U, 255.0);
     cv::imshow("Training Image", img_8u);
+    */
+
+
+    if (train_nn()) {
+        std::cout << "training the model failed" << std::endl;
+        return FAILURE;
+    }
 
 
     while (window.isOpen()) {
