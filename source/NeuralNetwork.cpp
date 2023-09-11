@@ -7,10 +7,21 @@
 #define NUM_OUTPUT_NEURONS  10
 
 
-// Sigmoid function
 Eigen::MatrixXd sigmoid(const Eigen::MatrixXd& z) {
     return 1.0 / (1.0 + (-z).array().exp());
 }
+
+
+void saveMatrix(const Eigen::MatrixXd& matrix, const std::string& filename) {
+    std::ofstream outFile(filename);
+    if (outFile.is_open()) {
+        outFile << matrix.format(Eigen::IOFormat(Eigen::FullPrecision));
+        outFile.close();
+    } else {
+        std::cout << "Cannot open file for writing: " << filename << std::endl;
+    }
+}
+
 
 ReturnStatus train_nn() {
     Eigen::MatrixXd images, labels;
@@ -41,7 +52,6 @@ ReturnStatus train_nn() {
     for (int epoch = 0; epoch < epochs; ++epoch) {
         std::cout << "Training Epoch: " << epoch << std::endl;
         for (int i = 0; i < images.rows(); ++i) {
-            std::cout << "Processing sample: " << i << std::endl;
             Eigen::MatrixXd img = images.row(i).transpose();
             Eigen::MatrixXd label = labels.row(i).transpose();
 
@@ -80,37 +90,15 @@ ReturnStatus train_nn() {
         nr_correct = 0;
     }
 
-    // TODO: save learned parameters
+    // Save learned parameters
+    saveMatrix(w_i_h, "model/w_i_h.txt");
+    saveMatrix(b_i_h, "model/b_i_h.txt");
+    saveMatrix(w_h_o, "model/w_h_o.txt");
+    saveMatrix(b_h_o, "model/b_h_o.txt");
 
     return SUCCESS;
 }
 
 
 void test_nn() {
-    /*
-    Eigen::MatrixXd test_images, test_labels;
-    // get_mnist(test_images, test_labels);
-
-    int test_nr_correct = 0;
-
-    // Loop through the test set
-    for (int i = 0; i < test_images.rows(); ++i) {
-        Eigen::MatrixXd test_img = test_images.row(i).transpose();
-        Eigen::MatrixXd test_l = test_labels.row(i).transpose();
-
-        // Forward propagation input -> hidden
-        Eigen::MatrixXd test_h_pre = b_i_h + w_i_h * test_img;
-        Eigen::MatrixXd test_h = sigmoid(test_h_pre);
-
-        // Forward propagation hidden -> output
-        Eigen::MatrixXd test_o_pre = b_h_o + w_h_o * test_h;
-        Eigen::MatrixXd test_o = sigmoid(test_o_pre);
-
-        // Count correct predictions
-        test_nr_correct += (test_o.maxCoeff() == test_l.maxCoeff());
-    }
-
-    // Calculate and display the test accuracy
-    std::cout << "Test Accuracy: " << (double)test_nr_correct / test_images.rows() * 100 << "%" << std::endl;
-    */
 }
