@@ -1,4 +1,4 @@
-#include <Eigen>
+#include <Eigen/Dense>
 #include "global.hpp"
 
 
