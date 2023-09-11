@@ -1,9 +1,12 @@
 #include <chrono>
-#include <opencv2/opencv.hpp>
 
 #include "include/DrawMap.hpp"
 #include "include/HandleMouse.hpp"
 #include "include/NeuralNetwork.hpp"
+
+#ifdef  DEBUG
+#include <opencv2/opencv.hpp>
+#endif
 
 
 int main() {
@@ -27,42 +30,12 @@ int main() {
     text.setPosition(GRID_COLS * CELL_SIZE + (PADDING / 2) - (text.getGlobalBounds().width / 2), 3 * CELL_SIZE);
 
 
-    /*
-    Eigen::MatrixXd train_labels; 
-    Eigen::MatrixXd train_images;
-
-    if (read_mnist_labels(TRAIN_LABELS_PATH, train_labels)) {
-        std::cout << "reading labels failed" << std::endl;
-        return FAILURE;
-    }
-    if (read_mnist_images(TRAIN_IMAGES_PATH, train_images)) {
-        std::cout << "reading images failed" << std::endl;
-        return FAILURE;
-    }
-
-
-    for (int i = 0; i < 10; ++i) {
-        Eigen::MatrixXd label_vector = train_labels.row(i);
-        for (int j = 0; j < label_vector.size(); ++j) {
-            std::cout << label_vector(j) << " ";
-        }
-        std::cout << std::endl;
-    }
-
-
-    Eigen::VectorXd single_image_vector = train_images.row(0);
-    cv::Mat img(28, 28, CV_64F);
-    Eigen::Map<Eigen::MatrixXd>(img.ptr<double>(), img.rows, img.cols) = Eigen::Map<const Eigen::MatrixXd>(single_image_vector.data(), 28, 28);
-    cv::Mat img_8u;
-    img.convertTo(img_8u, CV_8U, 255.0);
-    cv::imshow("Training Image", img_8u);
-    */
-
-
+#ifdef  TRAIN_MODE
     if (train_nn()) {
         std::cout << "training the model failed" << std::endl;
         return FAILURE;
     }
+#endif
 
 
     while (window.isOpen()) {
