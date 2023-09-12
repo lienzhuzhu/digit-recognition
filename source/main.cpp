@@ -38,6 +38,7 @@ int main() {
     }
 #endif
 
+
     Eigen::MatrixXd w_i_h, b_i_h, w_h_o, b_h_o;
 
     if (load_parameters("model/w_i_h.txt", w_i_h)) {

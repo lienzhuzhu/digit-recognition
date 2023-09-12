@@ -73,6 +73,7 @@ ReturnStatus train_nn() {
             // Count it as correct if the indices match
             nr_correct += (predicted_index == true_index);
 
+            /* Where the learning happens */
             // Backpropagation output -> hidden
             Eigen::MatrixXd delta_o = o - label;
             w_h_o += -learn_rate * delta_o * h.transpose();
@@ -94,7 +95,6 @@ ReturnStatus train_nn() {
     std::cout << "w_h_o rows, cols\t" << w_h_o.rows() << ",\t" << w_h_o.cols() << std::endl;
     std::cout << "b_h_o rows, cols\t" << b_h_o.rows() << ",\t" << b_h_o.cols() << std::endl;
 
-    // Save learned parameters
     save_parameters(w_i_h, "model/w_i_h.txt");
     save_parameters(b_i_h, "model/b_i_h.txt");
     save_parameters(w_h_o, "model/w_h_o.txt");
@@ -104,23 +104,19 @@ ReturnStatus train_nn() {
 }
 
 
-ReturnStatus test_nn(const Eigen::MatrixXd& w_i_h, 
-            const Eigen::MatrixXd& b_i_h,
-            const Eigen::MatrixXd& w_h_o,
-            const Eigen::MatrixXd& b_h_o) 
-{
+ReturnStatus test_nn(const Eigen::MatrixXd& w_i_h, const Eigen::MatrixXd& b_i_h, const Eigen::MatrixXd& w_h_o, const Eigen::MatrixXd& b_h_o) {
     Eigen::MatrixXd images, labels;
     Eigen::VectorXd::Index maxRow, maxCol;
     int predicted_index, true_index;
     
     if (read_mnist_labels(TEST_LABELS_PATH, labels)) {
         std::cout << "Reading labels failed" << std::endl;
-        return FAILURE; // You may want to return an error code here
+        return FAILURE;
     }
 
     if (read_mnist_images(TEST_IMAGES_PATH, images)) {
         std::cout << "Reading images failed" << std::endl;
-        return FAILURE; // You may want to return an error code here
+        return FAILURE;
     }
 
     int numCorrect = 0;
@@ -137,18 +133,13 @@ ReturnStatus test_nn(const Eigen::MatrixXd& w_i_h,
         Eigen::MatrixXd o_pre = b_h_o + w_h_o * h;
         Eigen::MatrixXd o = sigmoid(o_pre);
 
-        // Find the index of the maximum value in the output layer's activation
-        Eigen::MatrixXd::Index maxRow, maxCol;
         o.maxCoeff(&maxRow, &maxCol);
         predicted_index = maxRow;
 
-        // Find the index of the maximum value in the label (should be 1)
         label.maxCoeff(&maxRow, &maxCol);
         true_index = maxRow;
         
-        if (predicted_index == true_index) { // Assuming labels are stored in a single column
-            numCorrect++;
-        }
+        numCorrect += (predicted_index == true_index);
     }
 
     double accuracy = static_cast<double>(numCorrect) / images.rows() * 100.0;
