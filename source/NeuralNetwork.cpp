@@ -110,6 +110,8 @@ ReturnStatus test_nn(const Eigen::MatrixXd& w_i_h,
             const Eigen::MatrixXd& b_h_o) 
 {
     Eigen::MatrixXd images, labels;
+    Eigen::VectorXd::Index maxRow, maxCol;
+    int true_index;
     
     if (read_mnist_labels(TEST_LABELS_PATH, labels)) {
         std::cout << "Reading labels failed" << std::endl;
@@ -125,6 +127,7 @@ ReturnStatus test_nn(const Eigen::MatrixXd& w_i_h,
 
     for (int i = 0; i < images.rows(); ++i) { // Assuming each row is a different image
         Eigen::MatrixXd img = images.row(i).transpose();
+        Eigen::MatrixXd label = labels.row(i).transpose();
 
         // Forward propagation input -> hidden
         Eigen::MatrixXd h_pre = b_i_h + w_i_h * img;
@@ -137,8 +140,12 @@ ReturnStatus test_nn(const Eigen::MatrixXd& w_i_h,
         // Find the index of the maximum value in the output layer's activation
         Eigen::MatrixXd::Index maxRow, maxCol;
         o.maxCoeff(&maxRow, &maxCol);
+
+        // Find the index of the maximum value in the label (should be 1)
+        label.maxCoeff(&maxRow, &maxCol);
+        true_index = maxRow;
         
-        if (maxRow == labels(i, 0)) { // Assuming labels are stored in a single column
+        if (maxRow == true_index) { // Assuming labels are stored in a single column
             numCorrect++;
         }
     }
