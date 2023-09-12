@@ -9,6 +9,7 @@
 #endif
 
 
+
 int main() {
     sf::RenderWindow window(sf::VideoMode(CELL_SIZE * GRID_COLS + PADDING, CELL_SIZE * GRID_ROWS), "Draw a number", sf::Style::Titlebar | sf::Style::Close);
 
@@ -56,6 +57,10 @@ int main() {
         return FAILURE;
     }
 
+    if (test_nn(w_i_h, b_i_h, w_h_o, b_h_o)) {
+        std::cout << "testing failed" << std::endl;
+        return FAILURE;
+    }
 
     while (window.isOpen()) {
 

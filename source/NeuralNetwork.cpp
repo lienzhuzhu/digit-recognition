@@ -89,10 +89,10 @@ ReturnStatus train_nn() {
         nr_correct = 0;
     }
 
-    std::cout << "w_i_h rows, cols" << w_i_h.rows() << ", " << w_i_h.cols() << std::endl;
-    std::cout << "b_i_h rows, cols" << b_i_h.rows() << ", " << b_i_h.cols() << std::endl;
-    std::cout << "w_h_o rows, cols" << w_h_o.rows() << ", " << w_h_o.cols() << std::endl;
-    std::cout << "b_h_o rows, cols" << b_h_o.rows() << ", " << b_h_o.cols() << std::endl;
+    std::cout << "w_i_h rows, cols\t" << w_i_h.rows() << ",\t" << w_i_h.cols() << std::endl;
+    std::cout << "b_i_h rows, cols\t" << b_i_h.rows() << ",\t" << b_i_h.cols() << std::endl;
+    std::cout << "w_h_o rows, cols\t" << w_h_o.rows() << ",\t" << w_h_o.cols() << std::endl;
+    std::cout << "b_h_o rows, cols\t" << b_h_o.rows() << ",\t" << b_h_o.cols() << std::endl;
 
     // Save learned parameters
     save_parameters(w_i_h, "model/w_i_h.txt");
@@ -104,5 +104,47 @@ ReturnStatus train_nn() {
 }
 
 
-void test_nn() {
+ReturnStatus test_nn(const Eigen::MatrixXd& w_i_h, 
+            const Eigen::MatrixXd& b_i_h,
+            const Eigen::MatrixXd& w_h_o,
+            const Eigen::MatrixXd& b_h_o) 
+{
+    Eigen::MatrixXd images, labels;
+    
+    if (read_mnist_labels(TEST_LABELS_PATH, labels)) {
+        std::cout << "Reading labels failed" << std::endl;
+        return FAILURE; // You may want to return an error code here
+    }
+
+    if (read_mnist_images(TEST_IMAGES_PATH, images)) {
+        std::cout << "Reading images failed" << std::endl;
+        return FAILURE; // You may want to return an error code here
+    }
+
+    int numCorrect = 0;
+
+    for (int i = 0; i < images.rows(); ++i) { // Assuming each row is a different image
+        Eigen::MatrixXd img = images.row(i).transpose();
+
+        // Forward propagation input -> hidden
+        Eigen::MatrixXd h_pre = b_i_h + w_i_h * img;
+        Eigen::MatrixXd h = sigmoid(h_pre);
+    
+        // Forward propagation hidden -> output
+        Eigen::MatrixXd o_pre = b_h_o + w_h_o * h;
+        Eigen::MatrixXd o = sigmoid(o_pre);
+
+        // Find the index of the maximum value in the output layer's activation
+        Eigen::MatrixXd::Index maxRow, maxCol;
+        o.maxCoeff(&maxRow, &maxCol);
+        
+        if (maxRow == labels(i, 0)) { // Assuming labels are stored in a single column
+            numCorrect++;
+        }
+    }
+
+    double accuracy = static_cast<double>(numCorrect) / images.rows() * 100.0;
+    std::cout << "Model accuracy on test set: " << accuracy << "%" << std::endl;
+
+    return SUCCESS;
 }
