@@ -22,7 +22,17 @@ void save_parameters(const Eigen::MatrixXd& matrix, const std::string& filename)
 }
 
 int predict(const Eigen::MatrixXd& img, const Eigen::MatrixXd& w_i_h, const Eigen::MatrixXd& b_i_h, const Eigen::MatrixXd& w_h_o, const Eigen::MatrixXd& b_h_o) {
-    return 0;
+    Eigen::VectorXd::Index predicted_index, max_col;
+
+    Eigen::MatrixXd h_pre = b_i_h + w_i_h * img; // NOTE: make sure img is a column vector or a <rows> x 1 matrix
+    Eigen::MatrixXd h = sigmoid(h_pre);
+
+    Eigen::MatrixXd o_pre = b_h_o + w_h_o * h;
+    Eigen::MatrixXd o = sigmoid(o_pre);
+
+    o.maxCoeff(&predicted_index, &max_col);
+
+    return predicted_index;
 }
 
 

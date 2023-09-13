@@ -21,3 +21,21 @@ void draw_map(Grid& map, sf::RenderWindow& window) {
         }
     }
 }
+
+Eigen::MatrixXd get_drawing(Grid &map) {
+    std::vector<double> curr_map;
+
+    for (int row_i = 0; row_i < GRID_ROWS; ++row_i) {
+        for (int col_i = 0; col_i < GRID_COLS; ++col_i) {
+            if (map[row_i][col_i].getFillColor() == BLACK) {
+                curr_map.push_back(1.0);
+            } else {
+                curr_map.push_back(0.0);
+            }
+        }
+    }
+
+    Eigen::VectorXd user_drawing = Eigen::Map<Eigen::VectorXd>(curr_map.data(), curr_map.size());
+
+    return user_drawing;
+}

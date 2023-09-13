@@ -18,6 +18,8 @@ int main() {
 
     Coords cell;
 
+    bool make_prediction = false;
+
 
     sf::Font font;
     if (!font.loadFromFile("../res/SpaceMonoNerdFont-Bold.ttf")) {
@@ -86,6 +88,7 @@ int main() {
                 } else {
                     map[cell.second][cell.first].setFillColor(GRAY);
                 }
+                make_prediction = true;
             }
         }
 
@@ -95,10 +98,15 @@ int main() {
 
         sf::Text guess_prompt;
         guess_prompt.setFont(font);
-        guess_prompt.setString("You drew the number");
         guess_prompt.setCharacterSize(20);
         guess_prompt.setFillColor(WHITE);
-        guess_prompt.setPosition(GRID_COLS * CELL_SIZE + (PADDING / 2) - (guess_prompt.getGlobalBounds().width / 2), 10 * CELL_SIZE);
+
+        if (make_prediction) {
+            int prediction = predict( get_drawing(map), w_i_h, b_i_h, w_h_o, b_h_o );
+            std::string prompt = "You drew the number " + std::to_string(prediction);
+            guess_prompt.setString(prompt);
+            guess_prompt.setPosition(GRID_COLS * CELL_SIZE + (PADDING / 2) - (guess_prompt.getGlobalBounds().width / 2), 10 * CELL_SIZE);
+        }
 
         window.clear();
         draw_map(map, window);

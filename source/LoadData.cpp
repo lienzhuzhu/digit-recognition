@@ -77,21 +77,21 @@ ReturnStatus load_parameters(const std::string& filename, Eigen::MatrixXd& matri
     }
     
     std::vector<double> values;
-    int rows = 0;
-    int cols = 0;
+    int row = 0;
+    int col = 0;
 
     std::string line;
     while (std::getline(infile, line)) {
         std::stringstream ss(line);
-        cols = 0;
+        col = 0;
         double val;
         while (ss >> val) {
             values.push_back(val);
-            ++cols;
+            ++col;
         }
-        ++rows;
+        ++row;
     }
 
-    matrix = Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>(values.data(), rows, cols);
+    matrix = Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>(values.data(), row, col);
     return SUCCESS;
 }
