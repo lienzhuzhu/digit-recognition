@@ -49,15 +49,17 @@ ReturnStatus test_nn(const Eigen::MatrixXd& hidden_weights, const Eigen::MatrixX
     int prediction, true_index;
     int num_correct = 0;
 
-    Eigen::VectorXd hidden_preactivation = hidden_biases + hidden_weights * img;
-    Eigen::VectorXd hidden_activation = sigmoid(hidden_preactivation);
+    Eigen::MatrixXd hidden_preactivation = hidden_weights * images.transpose() + hidden_biases * Eigen::MatrixXd::Ones(1, images.transpose().cols());
+    Eigen::MatrixXd hidden_activation = sigmoid(hidden_preactivation);
 
-    Eigen::VectorXd output_preactivation = output_biases + output_weights * hidden_activation;
-    Eigen::VectorXd output_activation = sigmoid(output_preactivation);
+    Eigen::MatrixXd output_preactivation = output_weights * hidden_activation + output_biases * Eigen::MatrixXd::Ones(1, hidden_activation.cols());
+    Eigen::MatrixXd output_activation = sigmoid(output_preactivation);
 
-    for (int i = 0; i < images.rows(); ++i) { // Assuming each image is a row
+    for (int i = 0; i < labels.rows(); ++i) {
+        Eigen::VectorXd output_vector = output_activation.col(i);
         Eigen::VectorXd label = labels.row(i).transpose();
 
+        output_vector.maxCoeff(&prediction);
         label.maxCoeff(&true_index);
         
         num_correct += (prediction == true_index);
