@@ -21,10 +21,11 @@ void save_parameters(const Eigen::MatrixXd& matrix, const std::string& filename)
     }
 }
 
-int predict(const Eigen::MatrixXd& img, const Eigen::MatrixXd& hidden_weights, const Eigen::MatrixXd& hidden_biases, const Eigen::MatrixXd& output_weights, const Eigen::MatrixXd& output_biases) {
+
+int predict(const Eigen::VectorXd& img, const Eigen::MatrixXd& hidden_weights, const Eigen::MatrixXd& hidden_biases, const Eigen::MatrixXd& output_weights, const Eigen::MatrixXd& output_biases) {
     Eigen::VectorXd::Index predicted_index;
 
-    Eigen::VectorXd hidden_preactivation = hidden_biases + hidden_weights * img; // NOTE: make sure img is a column vector or a <rows> x 1 matrix
+    Eigen::VectorXd hidden_preactivation = hidden_biases + hidden_weights * img;
     Eigen::VectorXd hidden_activation = sigmoid(hidden_preactivation);
 
     Eigen::VectorXd output_preactivation = output_biases + output_weights * hidden_activation;
@@ -33,6 +34,39 @@ int predict(const Eigen::MatrixXd& img, const Eigen::MatrixXd& hidden_weights, c
     output_activation.maxCoeff(&predicted_index);
 
     return predicted_index;
+}
+
+
+ReturnStatus test_nn(const Eigen::MatrixXd& hidden_weights, const Eigen::MatrixXd& hidden_biases, const Eigen::MatrixXd& output_weights, const Eigen::MatrixXd& output_biases) {
+    Eigen::MatrixXd images, labels;
+    
+    if (read_mnist_labels(TEST_LABELS_PATH, labels))
+        ERROR("Reading Test Labels");
+
+    if (read_mnist_images(TEST_IMAGES_PATH, images))
+        ERROR("Reading Test Images");
+
+    int prediction, true_index;
+    int num_correct = 0;
+
+    Eigen::VectorXd hidden_preactivation = hidden_biases + hidden_weights * img;
+    Eigen::VectorXd hidden_activation = sigmoid(hidden_preactivation);
+
+    Eigen::VectorXd output_preactivation = output_biases + output_weights * hidden_activation;
+    Eigen::VectorXd output_activation = sigmoid(output_preactivation);
+
+    for (int i = 0; i < images.rows(); ++i) { // Assuming each image is a row
+        Eigen::VectorXd label = labels.row(i).transpose();
+
+        label.maxCoeff(&true_index);
+        
+        num_correct += (prediction == true_index);
+    }
+
+    
+    std::cout << "Model accuracy on test set: " << static_cast<double>(num_correct) / images.rows() * 100.0 << "%" << std::endl;
+
+    return SUCCESS;
 }
 
 
@@ -111,34 +145,3 @@ ReturnStatus train_nn() {
     return SUCCESS;
 }
 
-
-ReturnStatus test_nn(const Eigen::MatrixXd& hidden_weights, const Eigen::MatrixXd& hidden_biases, const Eigen::MatrixXd& output_weights, const Eigen::MatrixXd& output_biases) {
-    Eigen::MatrixXd images, labels;
-    Eigen::VectorXd::Index max_row, max_col;
-    int prediction, true_index;
-    
-    if (read_mnist_labels(TEST_LABELS_PATH, labels))
-        ERROR("Reading Test Labels");
-
-    if (read_mnist_images(TEST_IMAGES_PATH, images))
-        ERROR("Reading Test Images");
-
-    int num_correct = 0;
-
-    for (int i = 0; i < images.rows(); ++i) { // Assuming each row is a different image
-        Eigen::MatrixXd img = images.row(i).transpose();
-        Eigen::MatrixXd label = labels.row(i).transpose();
-
-        prediction = predict(img, hidden_weights, hidden_biases, output_weights, output_biases);
-
-        label.maxCoeff(&max_row, &max_col);
-        true_index = max_row;
-        
-        num_correct += (prediction == true_index);
-    }
-
-    
-    std::cout << "Model accuracy on test set: " << static_cast<double>(num_correct) / images.rows() * 100.0 << "%" << std::endl;
-
-    return SUCCESS;
-}
