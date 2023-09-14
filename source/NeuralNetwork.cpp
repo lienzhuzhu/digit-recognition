@@ -21,13 +21,13 @@ void save_parameters(const Eigen::MatrixXd& matrix, const std::string& filename)
     }
 }
 
-int predict(const Eigen::MatrixXd& img, const Eigen::MatrixXd& w_i_h, const Eigen::MatrixXd& b_i_h, const Eigen::MatrixXd& w_h_o, const Eigen::MatrixXd& b_h_o) {
+int predict(const Eigen::MatrixXd& img, const Eigen::MatrixXd& hidden_weights, const Eigen::MatrixXd& hidden_biases, const Eigen::MatrixXd& output_weights, const Eigen::MatrixXd& output_biases) {
     Eigen::VectorXd::Index predicted_index, max_col;
 
-    Eigen::MatrixXd h_pre = b_i_h + w_i_h * img; // NOTE: make sure img is a column vector or a <rows> x 1 matrix
+    Eigen::MatrixXd h_pre = hidden_biases + hidden_weights * img; // NOTE: make sure img is a column vector or a <rows> x 1 matrix
     Eigen::MatrixXd h = sigmoid(h_pre);
 
-    Eigen::MatrixXd o_pre = b_h_o + w_h_o * h;
+    Eigen::MatrixXd o_pre = output_biases + output_weights * h;
     Eigen::MatrixXd o = sigmoid(o_pre);
 
     o.maxCoeff(&predicted_index, &max_col);
@@ -49,11 +49,11 @@ ReturnStatus train_nn() {
     }
 
     // Randomly initialize weights and biases
-    Eigen::MatrixXd w_i_h = Eigen::MatrixXd::Random(NUM_HIDDEN_NEURONS, NUM_INPUT_NEURONS);
-    Eigen::MatrixXd b_i_h = Eigen::MatrixXd::Zero(NUM_HIDDEN_NEURONS, 1);
+    Eigen::MatrixXd hidden_weights = Eigen::MatrixXd::Random(NUM_HIDDEN_NEURONS, NUM_INPUT_NEURONS);
+    Eigen::MatrixXd hidden_biases = Eigen::MatrixXd::Zero(NUM_HIDDEN_NEURONS, 1);
 
-    Eigen::MatrixXd w_h_o = Eigen::MatrixXd::Random(NUM_OUTPUT_NEURONS, NUM_HIDDEN_NEURONS);
-    Eigen::MatrixXd b_h_o = Eigen::MatrixXd::Zero(NUM_OUTPUT_NEURONS, 1);
+    Eigen::MatrixXd output_weights = Eigen::MatrixXd::Random(NUM_OUTPUT_NEURONS, NUM_HIDDEN_NEURONS);
+    Eigen::MatrixXd output_biases = Eigen::MatrixXd::Zero(NUM_OUTPUT_NEURONS, 1);
 
     double learn_rate = 0.01;
     int nr_correct = 0;
@@ -69,11 +69,11 @@ ReturnStatus train_nn() {
             Eigen::MatrixXd label = labels.row(i).transpose();
 
             // Forward propagation input -> hidden
-            Eigen::MatrixXd h_pre = b_i_h + w_i_h * img;
+            Eigen::MatrixXd h_pre = hidden_biases + hidden_weights * img;
             Eigen::MatrixXd h = sigmoid(h_pre);
 
             // Forward propagation hidden -> output
-            Eigen::MatrixXd o_pre = b_h_o + w_h_o * h;
+            Eigen::MatrixXd o_pre = output_biases + output_weights * h;
             Eigen::MatrixXd o = sigmoid(o_pre);
 
             // Find the index of the maximum value in the output layer's activation
@@ -90,35 +90,35 @@ ReturnStatus train_nn() {
             /* Where the learning happens */
             // Backpropagation output -> hidden
             Eigen::MatrixXd delta_o = o - label;
-            w_h_o += -learn_rate * delta_o * h.transpose();
-            b_h_o += -learn_rate * delta_o;
+            output_weights += -learn_rate * delta_o * h.transpose();
+            output_biases += -learn_rate * delta_o;
 
             // Backpropagation hidden -> input
-            Eigen::MatrixXd delta_h = w_h_o.transpose() * delta_o;
+            Eigen::MatrixXd delta_h = output_weights.transpose() * delta_o;
             delta_h = delta_h.array() * (h.array() * (1 - h.array()));
-            w_i_h += -learn_rate * delta_h * img.transpose();
-            b_i_h += -learn_rate * delta_h;
+            hidden_weights += -learn_rate * delta_h * img.transpose();
+            hidden_biases += -learn_rate * delta_h;
         }
 
         std::cout << "Epoch: " << epoch << " Accuracy: " << (double)nr_correct / images.rows() * 100 << "%" << std::endl;
         nr_correct = 0;
     }
 
-    std::cout << "w_i_h rows, cols\t" << w_i_h.rows() << ",\t" << w_i_h.cols() << std::endl;
-    std::cout << "b_i_h rows, cols\t" << b_i_h.rows() << ",\t" << b_i_h.cols() << std::endl;
-    std::cout << "w_h_o rows, cols\t" << w_h_o.rows() << ",\t" << w_h_o.cols() << std::endl;
-    std::cout << "b_h_o rows, cols\t" << b_h_o.rows() << ",\t" << b_h_o.cols() << std::endl;
+    std::cout << "hidden_weights rows, cols\t" << hidden_weights.rows() << ",\t" << hidden_weights.cols() << std::endl;
+    std::cout << "hidden_biases rows, cols\t" << hidden_biases.rows() << ",\t" << hidden_biases.cols() << std::endl;
+    std::cout << "output_weights rows, cols\t" << output_weights.rows() << ",\t" << output_weights.cols() << std::endl;
+    std::cout << "output_biases rows, cols\t" << output_biases.rows() << ",\t" << output_biases.cols() << std::endl;
 
-    save_parameters(w_i_h, "model/w_i_h.txt");
-    save_parameters(b_i_h, "model/b_i_h.txt");
-    save_parameters(w_h_o, "model/w_h_o.txt");
-    save_parameters(b_h_o, "model/b_h_o.txt");
+    save_parameters(hidden_weights, "model/hidden_weights.txt");
+    save_parameters(hidden_biases, "model/hidden_biases.txt");
+    save_parameters(output_weights, "model/output_weights.txt");
+    save_parameters(output_biases, "model/output_biases.txt");
 
     return SUCCESS;
 }
 
 
-ReturnStatus test_nn(const Eigen::MatrixXd& w_i_h, const Eigen::MatrixXd& b_i_h, const Eigen::MatrixXd& w_h_o, const Eigen::MatrixXd& b_h_o) {
+ReturnStatus test_nn(const Eigen::MatrixXd& hidden_weights, const Eigen::MatrixXd& hidden_biases, const Eigen::MatrixXd& output_weights, const Eigen::MatrixXd& output_biases) {
     Eigen::MatrixXd images, labels;
     Eigen::VectorXd::Index maxRow, maxCol;
     int prediction, true_index;
@@ -139,7 +139,7 @@ ReturnStatus test_nn(const Eigen::MatrixXd& w_i_h, const Eigen::MatrixXd& b_i_h,
         Eigen::MatrixXd img = images.row(i).transpose();
         Eigen::MatrixXd label = labels.row(i).transpose();
 
-        prediction = predict(img, w_i_h, b_i_h, w_h_o, b_h_o);
+        prediction = predict(img, hidden_weights, hidden_biases, output_weights, output_biases);
 
         label.maxCoeff(&maxRow, &maxCol);
         true_index = maxRow;
