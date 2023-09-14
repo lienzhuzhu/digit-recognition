@@ -92,6 +92,7 @@ ReturnStatus load_parameters(const std::string& filename, Eigen::MatrixXd& matri
         ++row;
     }
 
+    // matrix is column major since the mapped data is assigned to matrix, which by default is column major
     matrix = Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>(values.data(), row, col);
     return SUCCESS;
 }
