@@ -121,7 +121,7 @@ ReturnStatus train_nn() {
 ReturnStatus test_nn(const Eigen::MatrixXd& w_i_h, const Eigen::MatrixXd& b_i_h, const Eigen::MatrixXd& w_h_o, const Eigen::MatrixXd& b_h_o) {
     Eigen::MatrixXd images, labels;
     Eigen::VectorXd::Index maxRow, maxCol;
-    int predicted_index, true_index;
+    int prediction, true_index;
     
     if (read_mnist_labels(TEST_LABELS_PATH, labels)) {
         std::cout << "Reading labels failed" << std::endl;
@@ -139,21 +139,12 @@ ReturnStatus test_nn(const Eigen::MatrixXd& w_i_h, const Eigen::MatrixXd& b_i_h,
         Eigen::MatrixXd img = images.row(i).transpose();
         Eigen::MatrixXd label = labels.row(i).transpose();
 
-        // Forward propagation input -> hidden
-        Eigen::MatrixXd h_pre = b_i_h + w_i_h * img;
-        Eigen::MatrixXd h = sigmoid(h_pre);
-    
-        // Forward propagation hidden -> output
-        Eigen::MatrixXd o_pre = b_h_o + w_h_o * h;
-        Eigen::MatrixXd o = sigmoid(o_pre);
-
-        o.maxCoeff(&maxRow, &maxCol);
-        predicted_index = maxRow;
+        prediction = predict(img, w_i_h, b_i_h, w_h_o, b_h_o);
 
         label.maxCoeff(&maxRow, &maxCol);
         true_index = maxRow;
         
-        numCorrect += (predicted_index == true_index);
+        numCorrect += (prediction == true_index);
     }
 
     double accuracy = static_cast<double>(numCorrect) / images.rows() * 100.0;
