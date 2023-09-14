@@ -39,14 +39,10 @@ int predict(const Eigen::MatrixXd& img, const Eigen::MatrixXd& hidden_weights, c
 ReturnStatus train_nn() {
     Eigen::MatrixXd images, labels;
     
-    if (read_mnist_labels(TRAIN_LABELS_PATH, labels)) {
-        std::cout << "reading labels failed" << std::endl;
-        return FAILURE;
-    }
-    if (read_mnist_images(TRAIN_IMAGES_PATH, images)) {
-        std::cout << "reading images failed" << std::endl;
-        return FAILURE;
-    }
+    if (read_mnist_labels(TRAIN_LABELS_PATH, labels))
+        ERROR("Reading Training Labels");
+    if (read_mnist_images(TRAIN_IMAGES_PATH, images))
+        ERROR("Reading Training Images");
 
     // Randomly initialize weights and biases
     Eigen::MatrixXd hidden_weights = Eigen::MatrixXd::Random(NUM_HIDDEN_NEURONS, NUM_INPUT_NEURONS);
@@ -55,13 +51,12 @@ ReturnStatus train_nn() {
     Eigen::MatrixXd output_weights = Eigen::MatrixXd::Random(NUM_OUTPUT_NEURONS, NUM_HIDDEN_NEURONS);
     Eigen::MatrixXd output_biases = Eigen::MatrixXd::Zero(NUM_OUTPUT_NEURONS, 1);
 
-    int nr_correct = 0;
-    int epochs = 3;
+    int num_correct = 0;
 
     int predicted_index, true_index;
     Eigen::VectorXd::Index max_row, max_col;
 
-    for (int epoch = 0; epoch < epochs; ++epoch) {
+    for (int epoch = 0; epoch < EPOCHS; ++epoch) {
         std::cout << "Training Epoch: " << epoch << std::endl;
         for (int i = 0; i < images.rows(); ++i) {
             Eigen::MatrixXd img = images.row(i).transpose();
@@ -84,7 +79,7 @@ ReturnStatus train_nn() {
             true_index = max_row;
 
             // Count it as correct if the indices match
-            nr_correct += (predicted_index == true_index);
+            num_correct += (predicted_index == true_index);
 
             /* Where the learning happens */
             // Backpropagation output -> hidden
@@ -99,8 +94,8 @@ ReturnStatus train_nn() {
             hidden_biases += -ETA * delta_h;
         }
 
-        std::cout << "Epoch: " << epoch << " Accuracy: " << (double)nr_correct / images.rows() * 100 << "%" << std::endl;
-        nr_correct = 0;
+        std::cout << "Epoch: " << epoch << " Accuracy: " << (double)num_correct / images.rows() * 100 << "%" << std::endl;
+        num_correct = 0;
     }
 
     std::cout << "hidden_weights rows, cols\t" << hidden_weights.rows() << ",\t" << hidden_weights.cols() << std::endl;
@@ -122,17 +117,13 @@ ReturnStatus test_nn(const Eigen::MatrixXd& hidden_weights, const Eigen::MatrixX
     Eigen::VectorXd::Index max_row, max_col;
     int prediction, true_index;
     
-    if (read_mnist_labels(TEST_LABELS_PATH, labels)) {
-        std::cout << "Reading labels failed" << std::endl;
-        return FAILURE;
-    }
+    if (read_mnist_labels(TEST_LABELS_PATH, labels))
+        ERROR("Reading Test Labels");
 
-    if (read_mnist_images(TEST_IMAGES_PATH, images)) {
-        std::cout << "Reading images failed" << std::endl;
-        return FAILURE;
-    }
+    if (read_mnist_images(TEST_IMAGES_PATH, images))
+        ERROR("Reading Test Images");
 
-    int numCorrect = 0;
+    int num_correct = 0;
 
     for (int i = 0; i < images.rows(); ++i) { // Assuming each row is a different image
         Eigen::MatrixXd img = images.row(i).transpose();
@@ -143,11 +134,11 @@ ReturnStatus test_nn(const Eigen::MatrixXd& hidden_weights, const Eigen::MatrixX
         label.maxCoeff(&max_row, &max_col);
         true_index = max_row;
         
-        numCorrect += (prediction == true_index);
+        num_correct += (prediction == true_index);
     }
 
-    double accuracy = static_cast<double>(numCorrect) / images.rows() * 100.0;
-    std::cout << "Model accuracy on test set: " << accuracy << "%" << std::endl;
+    
+    std::cout << "Model accuracy on test set: " << static_cast<double>(num_correct) / images.rows() * 100.0 << "%" << std::endl;
 
     return SUCCESS;
 }
