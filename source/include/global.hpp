@@ -10,6 +10,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+#define ERROR(msg) do { perror(msg); exit(FAILURE); } while (0)
+
 #define GRID_ROWS   28
 #define GRID_COLS   28
 #define CELL_SIZE   25
@@ -22,7 +24,8 @@
 #define RED sf::Color(255,102,99)
 #define BLUE sf::Color(0,109,170)
 
-#define ERROR(msg) do { perror(msg); exit(FAILURE); } while (0)
+#define ETA     0.01
+#define EPOCHS  3
 
 const std::string TRAIN_IMAGES_PATH     = "../raw/train-images-idx3-ubyte";
 const std::string TRAIN_LABELS_PATH     = "../raw/train-labels-idx1-ubyte";

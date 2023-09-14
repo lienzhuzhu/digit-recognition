@@ -55,7 +55,6 @@ ReturnStatus train_nn() {
     Eigen::MatrixXd output_weights = Eigen::MatrixXd::Random(NUM_OUTPUT_NEURONS, NUM_HIDDEN_NEURONS);
     Eigen::MatrixXd output_biases = Eigen::MatrixXd::Zero(NUM_OUTPUT_NEURONS, 1);
 
-    double learn_rate = 0.01;
     int nr_correct = 0;
     int epochs = 3;
 
@@ -90,14 +89,14 @@ ReturnStatus train_nn() {
             /* Where the learning happens */
             // Backpropagation output -> hidden
             Eigen::MatrixXd delta_o = o - label;
-            output_weights += -learn_rate * delta_o * h.transpose();
-            output_biases += -learn_rate * delta_o;
+            output_weights += -ETA * delta_o * h.transpose();
+            output_biases += -ETA * delta_o;
 
             // Backpropagation hidden -> input
             Eigen::MatrixXd delta_h = output_weights.transpose() * delta_o;
             delta_h = delta_h.array() * (h.array() * (1 - h.array()));
-            hidden_weights += -learn_rate * delta_h * img.transpose();
-            hidden_biases += -learn_rate * delta_h;
+            hidden_weights += -ETA * delta_h * img.transpose();
+            hidden_biases += -ETA * delta_h;
         }
 
         std::cout << "Epoch: " << epoch << " Accuracy: " << (double)nr_correct / images.rows() * 100 << "%" << std::endl;
