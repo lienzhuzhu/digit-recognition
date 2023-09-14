@@ -22,15 +22,15 @@ void save_parameters(const Eigen::MatrixXd& matrix, const std::string& filename)
 }
 
 int predict(const Eigen::MatrixXd& img, const Eigen::MatrixXd& hidden_weights, const Eigen::MatrixXd& hidden_biases, const Eigen::MatrixXd& output_weights, const Eigen::MatrixXd& output_biases) {
-    Eigen::VectorXd::Index predicted_index, max_col;
+    Eigen::VectorXd::Index predicted_index;
 
-    Eigen::MatrixXd h_pre = hidden_biases + hidden_weights * img; // NOTE: make sure img is a column vector or a <rows> x 1 matrix
-    Eigen::MatrixXd h = sigmoid(h_pre);
+    Eigen::VectorXd hidden_preactivation = hidden_biases + hidden_weights * img; // NOTE: make sure img is a column vector or a <rows> x 1 matrix
+    Eigen::VectorXd hidden_activation = sigmoid(hidden_preactivation);
 
-    Eigen::MatrixXd o_pre = output_biases + output_weights * h;
-    Eigen::MatrixXd o = sigmoid(o_pre);
+    Eigen::VectorXd output_preactivation = output_biases + output_weights * hidden_activation;
+    Eigen::VectorXd output_activation = sigmoid(output_preactivation);
 
-    o.maxCoeff(&predicted_index, &max_col);
+    output_activation.maxCoeff(&predicted_index);
 
     return predicted_index;
 }
@@ -60,7 +60,7 @@ ReturnStatus train_nn() {
     int epochs = 3;
 
     int predicted_index, true_index;
-    Eigen::VectorXd::Index maxRow, maxCol;
+    Eigen::VectorXd::Index max_row, max_col;
 
     for (int epoch = 0; epoch < epochs; ++epoch) {
         std::cout << "Training Epoch: " << epoch << std::endl;
@@ -77,12 +77,12 @@ ReturnStatus train_nn() {
             Eigen::MatrixXd o = sigmoid(o_pre);
 
             // Find the index of the maximum value in the output layer's activation
-            o.maxCoeff(&maxRow, &maxCol);
-            predicted_index = maxRow;
+            o.maxCoeff(&max_row, &max_col);
+            predicted_index = max_row;
 
             // Find the index of the maximum value in the label (should be 1)
-            label.maxCoeff(&maxRow, &maxCol);
-            true_index = maxRow;
+            label.maxCoeff(&max_row, &max_col);
+            true_index = max_row;
 
             // Count it as correct if the indices match
             nr_correct += (predicted_index == true_index);
@@ -120,7 +120,7 @@ ReturnStatus train_nn() {
 
 ReturnStatus test_nn(const Eigen::MatrixXd& hidden_weights, const Eigen::MatrixXd& hidden_biases, const Eigen::MatrixXd& output_weights, const Eigen::MatrixXd& output_biases) {
     Eigen::MatrixXd images, labels;
-    Eigen::VectorXd::Index maxRow, maxCol;
+    Eigen::VectorXd::Index max_row, max_col;
     int prediction, true_index;
     
     if (read_mnist_labels(TEST_LABELS_PATH, labels)) {
@@ -141,8 +141,8 @@ ReturnStatus test_nn(const Eigen::MatrixXd& hidden_weights, const Eigen::MatrixX
 
         prediction = predict(img, hidden_weights, hidden_biases, output_weights, output_biases);
 
-        label.maxCoeff(&maxRow, &maxCol);
-        true_index = maxRow;
+        label.maxCoeff(&max_row, &max_col);
+        true_index = max_row;
         
         numCorrect += (prediction == true_index);
     }
