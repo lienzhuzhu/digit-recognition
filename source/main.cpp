@@ -12,12 +12,15 @@
 int main() {
 
 #ifdef  TRAIN_MODE
+    auto start_time = std::chrono::high_resolution_clock::now();
+    std::cout << "Testing took " << duration << " milliseconds to complete." << std::endl;
     if (train_nn()) {
         std::cout << "training the model failed" << std::endl;
         return FAILURE;
     }
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
+    std::cout << "Training took " << duration << " milliseconds to complete." << std::endl;
 #endif
-
 
     Eigen::MatrixXd hidden_weights, hidden_biases, output_weights, output_biases;
 
@@ -36,9 +39,7 @@ int main() {
     auto start_time = std::chrono::high_resolution_clock::now();
     if (test_nn(hidden_weights, hidden_biases, output_weights, output_biases))
         ERROR("test_nn()");
-    auto end_time = std::chrono::high_resolution_clock::now();
-
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start_time).count();
     std::cout << "Testing took " << duration << " milliseconds to complete." << std::endl;
 
 
