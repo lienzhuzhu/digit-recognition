@@ -117,11 +117,12 @@ ReturnStatus train_nn() {
             num_correct += (prediction == true_index);
 
             /* Where the learning happens */
-            Eigen::MatrixXd delta_output = output_activation - label;                   // 10 x 1
-            output_weights += -ETA * delta_output * hidden_activation.transpose();      // 10 x 20
-            output_biases += -ETA * delta_output;                                       // 10 x 1
+            Eigen::MatrixXd delta_output = output_activation - label;                                               // 10 x 1   // output_gradient
+            output_weights += -ETA * delta_output * hidden_activation.transpose();                                  // 10 x 20  // weights_gradient = np.dot(output_gradient, self.input.T)
+                                                                                                                                // self.weights -= learning_rate * weights_gradient        
+            output_biases += -ETA * delta_output;                                                                   // 10 x 1   // self.bias -= learning_rate * output_gradient
 
-            Eigen::MatrixXd delta_hidden = output_weights.transpose() * delta_output;                               // 20 x 1
+            Eigen::MatrixXd delta_hidden = output_weights.transpose() * delta_output;                               // 20 x 1   // input_gradient = np.dot(self.weights.T, output_gradient)
             delta_hidden = delta_hidden.array() * (hidden_activation.array() * (1 - hidden_activation.array()));    // 20 x 1
             hidden_weights += -ETA * delta_hidden * img.transpose();                                                // 20 x 784
             hidden_biases += -ETA * delta_hidden;                                                                   // 20 x 1
