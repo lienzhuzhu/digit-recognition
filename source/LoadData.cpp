@@ -5,8 +5,8 @@ ReturnStatus read_mnist_labels(const std::string &full_path, Eigen::MatrixXd &la
     std::ifstream file(full_path, std::ios::binary);
 
     if (file.is_open()) {
-        int magic_number = 0;
-        int num_items = 0;
+        uint32_t magic_number = 0;
+        uint32_t num_items = 0;
 
         file.read((char*)&magic_number, sizeof(magic_number));
         magic_number = __builtin_bswap32(magic_number);
@@ -34,10 +34,10 @@ ReturnStatus read_mnist_images(const std::string &full_path, Eigen::MatrixXd &im
     std::ifstream file(full_path, std::ios::binary);
 
     if (file.is_open()) {
-        int magic_number = 0;
-        int num_images = 0;
-        int num_rows = 0;
-        int num_cols = 0;
+        uint32_t magic_number = 0;
+        uint32_t num_images = 0;
+        uint32_t num_rows = 0;
+        uint32_t num_cols = 0;
 
         file.read((char*)&magic_number, sizeof(magic_number));
         magic_number = __builtin_bswap32(magic_number);
