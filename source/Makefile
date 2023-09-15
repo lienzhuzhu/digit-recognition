@@ -2,8 +2,12 @@
 CXX = g++
 CXXFLAGS = -std=c++11
 
-ifdef TRAIN_MODE
-	CXXFLAGS += -DTRAIN_MODE
+ifdef TRAIN
+	CXXFLAGS += -DTRAIN
+endif
+
+ifdef TEST
+	CXXFLAGS += -DTEST
 endif
 
 # Include directories

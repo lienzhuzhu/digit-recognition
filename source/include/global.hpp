@@ -9,6 +9,8 @@
 #include <vector>
 #include <cstdio>
 #include <cstdlib>
+#include <string>
+#include <iomanip> // Include for std::setw
 
 #define ERROR(msg) do { perror(msg); exit(FAILURE); } while (0)
 
