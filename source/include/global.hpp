@@ -7,6 +7,12 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <cstdio>
+#include <cstdlib>
+#include <string>
+#include <iomanip> // Include for std::setw
+
+#define ERROR(msg) do { perror(msg); exit(FAILURE); } while (0)
 
 #define GRID_ROWS   28
 #define GRID_COLS   28
@@ -19,6 +25,9 @@
 #define WHITE sf::Color(240,247,238)
 #define RED sf::Color(255,102,99)
 #define BLUE sf::Color(0,109,170)
+
+#define ETA     0.01
+#define EPOCHS  3
 
 const std::string TRAIN_IMAGES_PATH     = "../raw/train-images-idx3-ubyte";
 const std::string TRAIN_LABELS_PATH     = "../raw/train-labels-idx1-ubyte";

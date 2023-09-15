@@ -6,6 +6,11 @@
 #define NUM_OUTPUT_NEURONS  10
 
 
+void print_dimensions(const std::string& name, const Eigen::MatrixXd& mat) {
+    std::cout << std::left << std::setw(20) << name << mat.rows() << " x " << mat.cols() << std::endl;
+}
+
+
 Eigen::MatrixXd sigmoid(const Eigen::MatrixXd& z) {
     return 1.0 / (1.0 + (-z).array().exp());
 }
@@ -21,134 +26,116 @@ void save_parameters(const Eigen::MatrixXd& matrix, const std::string& filename)
     }
 }
 
-int predict(const Eigen::MatrixXd& img, const Eigen::MatrixXd& w_i_h, const Eigen::MatrixXd& b_i_h, const Eigen::MatrixXd& w_h_o, const Eigen::MatrixXd& b_h_o) {
-    Eigen::VectorXd::Index predicted_index, max_col;
 
-    Eigen::MatrixXd h_pre = b_i_h + w_i_h * img; // NOTE: make sure img is a column vector or a <rows> x 1 matrix
-    Eigen::MatrixXd h = sigmoid(h_pre);
+int predict(const Eigen::VectorXd& img, const Eigen::MatrixXd& hidden_weights, const Eigen::MatrixXd& hidden_biases, const Eigen::MatrixXd& output_weights, const Eigen::MatrixXd& output_biases) {
+    Eigen::VectorXd::Index predicted_index;
 
-    Eigen::MatrixXd o_pre = b_h_o + w_h_o * h;
-    Eigen::MatrixXd o = sigmoid(o_pre);
+    Eigen::VectorXd hidden_preactivation = hidden_biases + hidden_weights * img;
+    Eigen::VectorXd hidden_activation = sigmoid(hidden_preactivation);
 
-    o.maxCoeff(&predicted_index, &max_col);
+    Eigen::VectorXd output_preactivation = output_biases + output_weights * hidden_activation;
+    Eigen::VectorXd output_activation = sigmoid(output_preactivation);
+
+    output_activation.maxCoeff(&predicted_index);
 
     return predicted_index;
 }
 
 
+ReturnStatus test_nn(const Eigen::MatrixXd& hidden_weights, const Eigen::MatrixXd& hidden_biases, const Eigen::MatrixXd& output_weights, const Eigen::MatrixXd& output_biases) {
+    Eigen::MatrixXd images, labels;
+    
+    if (read_mnist_labels(TEST_LABELS_PATH, labels))
+        ERROR("Reading Test Labels");
+
+    if (read_mnist_images(TEST_IMAGES_PATH, images))
+        ERROR("Reading Test Images");
+
+    int prediction, true_index;
+    int num_correct = 0;
+
+    Eigen::MatrixXd hidden_preactivation = hidden_weights * images.transpose() + hidden_biases * Eigen::MatrixXd::Ones(1, images.transpose().cols());
+    Eigen::MatrixXd hidden_activation = sigmoid(hidden_preactivation);
+
+    Eigen::MatrixXd output_preactivation = output_weights * hidden_activation + output_biases * Eigen::MatrixXd::Ones(1, hidden_activation.cols());
+    Eigen::MatrixXd output_activation = sigmoid(output_preactivation);
+
+    for (int i = 0; i < labels.rows(); ++i) {
+        Eigen::VectorXd output_vector = output_activation.col(i);
+        Eigen::VectorXd label = labels.row(i).transpose();
+
+        output_vector.maxCoeff(&prediction);
+        label.maxCoeff(&true_index);
+        
+        num_correct += (prediction == true_index);
+    }
+    
+    std::cout << "Model accuracy on test set: " << static_cast<double>(num_correct) / images.rows() * 100.0 << "%" << std::endl;
+
+    return SUCCESS;
+}
+
+
 ReturnStatus train_nn() {
     Eigen::MatrixXd images, labels;
+    Eigen::VectorXd img, label;
+    Eigen::VectorXd hidden_preactivation, hidden_activation;
+    Eigen::VectorXd output_preactivation, output_activation;
     
-    if (read_mnist_labels(TRAIN_LABELS_PATH, labels)) {
-        std::cout << "reading labels failed" << std::endl;
-        return FAILURE;
-    }
-    if (read_mnist_images(TRAIN_IMAGES_PATH, images)) {
-        std::cout << "reading images failed" << std::endl;
-        return FAILURE;
-    }
+    if (read_mnist_labels(TRAIN_LABELS_PATH, labels))
+        ERROR("Reading Training Labels");
+    if (read_mnist_images(TRAIN_IMAGES_PATH, images))
+        ERROR("Reading Training Images");
 
-    // Randomly initialize weights and biases
-    Eigen::MatrixXd w_i_h = Eigen::MatrixXd::Random(NUM_HIDDEN_NEURONS, NUM_INPUT_NEURONS);
-    Eigen::MatrixXd b_i_h = Eigen::MatrixXd::Zero(NUM_HIDDEN_NEURONS, 1);
 
-    Eigen::MatrixXd w_h_o = Eigen::MatrixXd::Random(NUM_OUTPUT_NEURONS, NUM_HIDDEN_NEURONS);
-    Eigen::MatrixXd b_h_o = Eigen::MatrixXd::Zero(NUM_OUTPUT_NEURONS, 1);
+    Eigen::MatrixXd hidden_weights = Eigen::MatrixXd::Random(NUM_HIDDEN_NEURONS, NUM_INPUT_NEURONS);
+    Eigen::MatrixXd hidden_biases = Eigen::MatrixXd::Zero(NUM_HIDDEN_NEURONS, 1);
 
-    double learn_rate = 0.01;
-    int nr_correct = 0;
-    int epochs = 3;
+    Eigen::MatrixXd output_weights = Eigen::MatrixXd::Random(NUM_OUTPUT_NEURONS, NUM_HIDDEN_NEURONS);
+    Eigen::MatrixXd output_biases = Eigen::MatrixXd::Zero(NUM_OUTPUT_NEURONS, 1);
 
-    int predicted_index, true_index;
-    Eigen::VectorXd::Index maxRow, maxCol;
 
-    for (int epoch = 0; epoch < epochs; ++epoch) {
+    int num_correct = 0;
+    int prediction, true_index;
+
+    for (int epoch = 0; epoch < EPOCHS; ++epoch) {
         std::cout << "Training Epoch: " << epoch << std::endl;
-        for (int i = 0; i < images.rows(); ++i) {
-            Eigen::MatrixXd img = images.row(i).transpose();
-            Eigen::MatrixXd label = labels.row(i).transpose();
 
-            // Forward propagation input -> hidden
-            Eigen::MatrixXd h_pre = b_i_h + w_i_h * img;
-            Eigen::MatrixXd h = sigmoid(h_pre);
+        for (int i = 0; i < labels.rows(); ++i) {
+            img = images.row(i).transpose();
+            label = labels.row(i).transpose();
 
-            // Forward propagation hidden -> output
-            Eigen::MatrixXd o_pre = b_h_o + w_h_o * h;
-            Eigen::MatrixXd o = sigmoid(o_pre);
+            hidden_preactivation = hidden_weights * img + hidden_biases;
+            hidden_activation = sigmoid(hidden_preactivation);
 
-            // Find the index of the maximum value in the output layer's activation
-            o.maxCoeff(&maxRow, &maxCol);
-            predicted_index = maxRow;
+            output_preactivation = output_weights * hidden_activation + output_biases;
+            output_activation = sigmoid(output_preactivation);
 
-            // Find the index of the maximum value in the label (should be 1)
-            label.maxCoeff(&maxRow, &maxCol);
-            true_index = maxRow;
-
-            // Count it as correct if the indices match
-            nr_correct += (predicted_index == true_index);
+            output_activation.maxCoeff(&prediction);
+            label.maxCoeff(&true_index);
+            
+            num_correct += (prediction == true_index);
 
             /* Where the learning happens */
-            // Backpropagation output -> hidden
-            Eigen::MatrixXd delta_o = o - label;
-            w_h_o += -learn_rate * delta_o * h.transpose();
-            b_h_o += -learn_rate * delta_o;
+            Eigen::MatrixXd delta_output = output_activation - label;                   // 10 x 1
+            output_weights += -ETA * delta_output * hidden_activation.transpose();      // 10 x 20
+            output_biases += -ETA * delta_output;                                       // 10 x 1
 
-            // Backpropagation hidden -> input
-            Eigen::MatrixXd delta_h = w_h_o.transpose() * delta_o;
-            delta_h = delta_h.array() * (h.array() * (1 - h.array()));
-            w_i_h += -learn_rate * delta_h * img.transpose();
-            b_i_h += -learn_rate * delta_h;
+            Eigen::MatrixXd delta_hidden = output_weights.transpose() * delta_output;                               // 20 x 1
+            delta_hidden = delta_hidden.array() * (hidden_activation.array() * (1 - hidden_activation.array()));    // 20 x 1
+            hidden_weights += -ETA * delta_hidden * img.transpose();                                                // 20 x 784
+            hidden_biases += -ETA * delta_hidden;                                                                   // 20 x 1
         }
 
-        std::cout << "Epoch: " << epoch << " Accuracy: " << (double)nr_correct / images.rows() * 100 << "%" << std::endl;
-        nr_correct = 0;
+        std::cout << "Epoch: " << epoch << " Accuracy: " << (double)num_correct / images.rows() * 100 << "%" << std::endl;
+        num_correct = 0;
     }
 
-    std::cout << "w_i_h rows, cols\t" << w_i_h.rows() << ",\t" << w_i_h.cols() << std::endl;
-    std::cout << "b_i_h rows, cols\t" << b_i_h.rows() << ",\t" << b_i_h.cols() << std::endl;
-    std::cout << "w_h_o rows, cols\t" << w_h_o.rows() << ",\t" << w_h_o.cols() << std::endl;
-    std::cout << "b_h_o rows, cols\t" << b_h_o.rows() << ",\t" << b_h_o.cols() << std::endl;
-
-    save_parameters(w_i_h, "model/w_i_h.txt");
-    save_parameters(b_i_h, "model/b_i_h.txt");
-    save_parameters(w_h_o, "model/w_h_o.txt");
-    save_parameters(b_h_o, "model/b_h_o.txt");
+    save_parameters(hidden_weights, "model/hidden_weights.txt");
+    save_parameters(hidden_biases, "model/hidden_biases.txt");
+    save_parameters(output_weights, "model/output_weights.txt");
+    save_parameters(output_biases, "model/output_biases.txt");
 
     return SUCCESS;
 }
 
-
-ReturnStatus test_nn(const Eigen::MatrixXd& w_i_h, const Eigen::MatrixXd& b_i_h, const Eigen::MatrixXd& w_h_o, const Eigen::MatrixXd& b_h_o) {
-    Eigen::MatrixXd images, labels;
-    Eigen::VectorXd::Index maxRow, maxCol;
-    int prediction, true_index;
-    
-    if (read_mnist_labels(TEST_LABELS_PATH, labels)) {
-        std::cout << "Reading labels failed" << std::endl;
-        return FAILURE;
-    }
-
-    if (read_mnist_images(TEST_IMAGES_PATH, images)) {
-        std::cout << "Reading images failed" << std::endl;
-        return FAILURE;
-    }
-
-    int numCorrect = 0;
-
-    for (int i = 0; i < images.rows(); ++i) { // Assuming each row is a different image
-        Eigen::MatrixXd img = images.row(i).transpose();
-        Eigen::MatrixXd label = labels.row(i).transpose();
-
-        prediction = predict(img, w_i_h, b_i_h, w_h_o, b_h_o);
-
-        label.maxCoeff(&maxRow, &maxCol);
-        true_index = maxRow;
-        
-        numCorrect += (prediction == true_index);
-    }
-
-    double accuracy = static_cast<double>(numCorrect) / images.rows() * 100.0;
-    std::cout << "Model accuracy on test set: " << accuracy << "%" << std::endl;
-
-    return SUCCESS;
-}

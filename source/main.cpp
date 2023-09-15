@@ -9,13 +9,49 @@
 #endif
 
 
-
 int main() {
+
+#ifdef  TRAIN
+    auto train_start_time = std::chrono::high_resolution_clock::now();
+
+    if (train_nn())
+        ERROR("Model Training");
+
+    auto train_duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - train_start_time).count();
+    std::cout << "Training took " << train_duration << " milliseconds to complete." << std::endl;
+#endif
+
+    Eigen::MatrixXd hidden_weights, hidden_biases, output_weights, output_biases;
+
+    if (load_parameters("model/hidden_weights.txt", hidden_weights))
+        ERROR("hidden weights file");
+
+    if (load_parameters("model/hidden_biases.txt", hidden_biases))
+        ERROR("hidden biases file");
+
+    if (load_parameters("model/output_weights.txt", output_weights))
+        ERROR("output weights file");
+
+    if (load_parameters("model/output_biases.txt", output_biases))
+        ERROR("output biases file");
+
+#ifdef  TEST
+    auto test_start_time = std::chrono::high_resolution_clock::now();
+
+    if (test_nn(hidden_weights, hidden_biases, output_weights, output_biases))
+        ERROR("test_nn()");
+
+    auto test_duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - test_start_time).count();
+    std::cout << "Testing took " << test_duration << " milliseconds to complete." << std::endl;
+#endif
+
+
+
+    /*
     sf::RenderWindow window(sf::VideoMode(CELL_SIZE * GRID_COLS + PADDING, CELL_SIZE * GRID_ROWS), "Draw a number", sf::Style::Titlebar | sf::Style::Close);
 
     Grid map;
     init_map(map);
-
     Coords cell;
 
     bool make_prediction = false;
@@ -31,39 +67,6 @@ int main() {
     text.setCharacterSize(20);
     text.setFillColor(WHITE);
     text.setPosition(GRID_COLS * CELL_SIZE + (PADDING / 2) - (text.getGlobalBounds().width / 2), 3 * CELL_SIZE);
-
-
-#ifdef  TRAIN_MODE
-    if (train_nn()) {
-        std::cout << "training the model failed" << std::endl;
-        return FAILURE;
-    }
-#endif
-
-
-    Eigen::MatrixXd w_i_h, b_i_h, w_h_o, b_h_o;
-
-    if (load_parameters("model/w_i_h.txt", w_i_h)) {
-        std::cerr << "Could not load w_i_h" << std::endl;
-        return FAILURE;
-    }
-    if (load_parameters("model/b_i_h.txt", b_i_h)) {
-        std::cerr << "Could not load b_i_h" << std::endl;
-        return FAILURE;
-    }
-    if (load_parameters("model/w_h_o.txt", w_h_o)) {
-        std::cerr << "Could not load w_h_o" << std::endl;
-        return FAILURE;
-    }
-    if (load_parameters("model/b_h_o.txt", b_h_o)) {
-        std::cerr << "Could not load b_h_o" << std::endl;
-        return FAILURE;
-    }
-
-    if (test_nn(w_i_h, b_i_h, w_h_o, b_h_o)) {
-        std::cout << "testing failed" << std::endl;
-        return FAILURE;
-    }
 
     while (window.isOpen()) {
 
@@ -102,7 +105,7 @@ int main() {
         guess_prompt.setFillColor(WHITE);
 
         if (make_prediction) {
-            int prediction = predict( get_drawing(map), w_i_h, b_i_h, w_h_o, b_h_o );
+            int prediction = predict( get_drawing(map), hidden_weights, hidden_biases, output_weights, output_biases );
             std::string prompt = "You drew the number " + std::to_string(prediction);
             guess_prompt.setString(prompt);
             guess_prompt.setPosition(GRID_COLS * CELL_SIZE + (PADDING / 2) - (guess_prompt.getGlobalBounds().width / 2), 10 * CELL_SIZE);
@@ -113,7 +116,9 @@ int main() {
         window.draw(text);
         window.draw(guess_prompt);
         window.display();
+
     }
+    */
 
     return 0;
 }
