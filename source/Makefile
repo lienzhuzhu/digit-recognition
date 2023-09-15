@@ -1,3 +1,4 @@
+# Compiler and flags
 CXX = g++
 CXXFLAGS = -std=c++11
 
@@ -9,10 +10,13 @@ ifdef TEST
 	CXXFLAGS += -DTEST
 endif
 
+# Include directories
 INCLUDES = -Iinclude/
-SOURCES = $(wildcard *.cpp)
-OBJECTS = $(SOURCES:.cpp=.o)
 
+# Source files
+SOURCES = $(wildcard *.cpp)
+
+# Executable name
 EXEC = nn
 
 # Linker flags for SFML and OpenCV
@@ -25,13 +29,9 @@ ifdef DEBUG
 endif
 
 
-all: $(EXEC)
-
-$(EXEC): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LINKFLAGS)
-
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
+# Rules
+all:
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $(SOURCES) -o $(EXEC) $(LINKFLAGS)
 
 clean:
-	rm -f $(OBJECTS) $(EXEC)
+	rm -f $(EXEC)

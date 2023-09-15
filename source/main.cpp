@@ -46,8 +46,6 @@ int main() {
 #endif
 
 
-
-    /*
     sf::RenderWindow window(sf::VideoMode(CELL_SIZE * GRID_COLS + PADDING, CELL_SIZE * GRID_ROWS), "Draw a number", sf::Style::Titlebar | sf::Style::Close);
 
     Grid map;
@@ -118,7 +116,6 @@ int main() {
         window.display();
 
     }
-    */
 
     return 0;
 }
