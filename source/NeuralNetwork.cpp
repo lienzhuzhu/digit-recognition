@@ -119,7 +119,6 @@ ReturnStatus train_nn() {
             /* Where the learning happens */
             Eigen::MatrixXd delta_output = output_activation - label;                                               // 10 x 1   // output_gradient
             output_weights += -ETA * delta_output * hidden_activation.transpose();                                  // 10 x 20  // weights_gradient = np.dot(output_gradient, self.input.T)
-                                                                                                                                // self.weights -= learning_rate * weights_gradient        
             output_biases += -ETA * delta_output;                                                                   // 10 x 1   // self.bias -= learning_rate * output_gradient
 
             Eigen::MatrixXd delta_hidden = output_weights.transpose() * delta_output;                               // 20 x 1   // input_gradient = np.dot(self.weights.T, output_gradient)
