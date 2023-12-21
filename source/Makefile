@@ -12,6 +12,7 @@ endif
 
 # Include directories
 INCLUDES = -Iinclude/
+INCLUDES += -I/opt/homebrew/include/
 
 # Source files
 SOURCES = $(wildcard *.cpp)
@@ -19,8 +20,8 @@ SOURCES = $(wildcard *.cpp)
 # Executable name
 EXEC = nn
 
-# Linker flags for SFML and OpenCV
-LINKFLAGS = -lsfml-graphics -lsfml-window -lsfml-system 
+# Linker flag for SFML in homebrew
+LINKFLAGS = -L/opt/homebrew/lib/ -lsfml-graphics -lsfml-window -lsfml-system
 
 ifdef DEBUG
 	CXXFLAGS += -DDEBUG
@@ -35,3 +36,4 @@ all:
 
 clean:
 	rm -f $(EXEC)
+
